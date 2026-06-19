@@ -1,0 +1,16 @@
+# Render blueprint — push this repo, then "New > Blueprint" on render.com
+services:
+  - type: web
+    name: creditjump-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: ALLOWED_ORIGINS
+        value: "https://YOUR-FRONTEND-DOMAIN"   # e.g. https://creditjump.app
+      - key: RATE_LIMIT_PER_MIN
+        value: "20"
+      - key: PYTHON_VERSION
+        value: "3.12.6"

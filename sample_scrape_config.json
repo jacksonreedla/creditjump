@@ -1,0 +1,8 @@
+{
+  "destination": "Example University",
+  "mode": "html",
+  "url": "https://example.edu/admissions/transfer/equivalencies",
+  "table_selector": "table.equiv",
+  "columns": { "source_code": 0, "dest_code": 1, "dest_title": 2, "credits": 3 },
+  "applies_to_default": "elective"
+}
