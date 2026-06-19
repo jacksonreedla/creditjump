@@ -1,0 +1,5 @@
+# Scraper-only deps. NOT needed by the API host — keep these out of the
+# deployed image so it stays small.
+requests==2.32.3
+beautifulsoup4==4.12.3
+lxml==5.3.0

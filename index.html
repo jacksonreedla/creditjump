@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CreditJump</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--sans:"Helvetica Neue",Helvetica,Arial,sans-serif;--mono:ui-monospace,Menlo,Consolas,monospace;--gray:#777;--line:#e6e6e6}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:var(--sans);background:#fff;color:#000;line-height:1.5;-webkit-font-smoothing:antialiased;display:flex;justify-content:center;min-height:100vh}
+  .stage{width:100%;max-width:540px;padding:clamp(48px,12vh,120px) 28px 80px;display:flex;flex-direction:column;align-items:center}
+  .name{font-size:clamp(2.6rem,9vw,3.6rem);font-weight:800;letter-spacing:-.04em;line-height:1;text-align:center}
+  .tag{color:var(--gray);font-size:.9rem;margin-top:10px;text-align:center}
+  .beta{display:inline-block;border:1px solid #000;font-size:.62rem;font-weight:700;letter-spacing:.12em;padding:2px 7px;margin-left:8px;vertical-align:middle;text-transform:uppercase}
+
+  .step{width:100%;opacity:0;transform:translateY(12px);transition:opacity .5s ease,transform .5s ease}
+  .step.hidden{display:none}
+  .step.show{opacity:1;transform:none}
+  .form .step.show{margin-top:30px}
+  #step1.show{margin-top:40px}
+
+  .in{width:100%;border:none;border-bottom:1.5px solid #000;background:none;font-family:var(--sans);font-size:1.15rem;color:#000;padding:12px 2px;text-align:center}
+  .in::placeholder{color:#999;font-weight:400}
+  .in:focus{outline:none;border-bottom-width:2.5px}
+
+  .transcript{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .file-btn{border:1.5px solid #000;background:#fff;color:#000;font-family:var(--sans);font-size:.95rem;font-weight:600;padding:12px 22px;width:100%;transition:background .15s,color .15s}
+  .file-btn:hover{background:#000;color:#fff}
+  .file-btn.done{background:#000;color:#fff}
+  .sample{background:none;border:none;color:var(--gray);font-family:var(--sans);font-size:.85rem;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+  .sample:hover{color:#000}
+  .go-btn{width:100%;border:none;background:#000;color:#fff;font-family:var(--sans);font-size:1.05rem;font-weight:700;padding:16px;cursor:pointer;transition:opacity .15s}
+  .go-btn:hover{opacity:.82}
+  .go-btn:disabled{opacity:.4;cursor:default}
+
+  #status{width:100%;display:none;text-align:center;margin-top:40px}
+  #status.show{display:block}
+  .spin{width:40px;height:40px;border-radius:50%;border:3px solid var(--line);border-top-color:#000;margin:0 auto 18px;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  #statusMsg{color:var(--gray);font-size:.92rem}
+  #statusMsg.err{color:#000;font-weight:600}
+
+  #results{width:100%;display:none}
+  #results.show{display:block}
+  .r-num{font-size:clamp(2.4rem,9vw,3.4rem);font-weight:800;letter-spacing:-.03em;line-height:1;text-align:center}
+  .r-num span{color:var(--gray)}
+  .r-label{text-align:center;font-size:1.05rem;margin-top:8px}
+  .r-route{text-align:center;color:var(--gray);font-size:.9rem;margin-top:6px}
+  .r-meta{text-align:center;color:var(--gray);font-size:.85rem;margin-top:14px;line-height:1.7}
+  .legend{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin:30px 0 4px;font-size:.78rem;color:var(--gray)}
+  .legend b{color:#000;font-weight:700;margin-right:5px;font-family:var(--mono)}
+
+  .row{display:grid;grid-template-columns:22px 1fr 26px 1fr;gap:12px;align-items:center;padding:15px 0;border-top:1px solid var(--line)}
+  .row:last-of-type{border-bottom:1px solid var(--line)}
+  .row.no{color:var(--gray)}
+  .glyph{display:grid;place-items:center}
+  .glyph .box{width:18px;height:18px;border:1.5px solid #000;border-radius:50%;display:grid;place-items:center}
+  .row.go .glyph .box{background:#000}
+  .row.no .glyph .box{border-color:var(--gray)}
+  .code{font-family:var(--mono);font-size:.86rem;font-weight:600}
+  .title{font-size:.8rem;color:var(--gray);margin-top:2px;line-height:1.3}
+  .pend{font-size:.7rem;color:var(--gray);font-style:italic}
+  .row.no .code,.row.no .title{color:var(--gray)}
+  .arrow{display:grid;place-items:center;color:#bbb}
+  .dest .code.dim{color:var(--gray)}
+
+  .startover{display:block;margin:34px auto 0;background:none;border:none;font-family:var(--sans);font-size:.92rem;color:#000;font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+  .disc{text-align:center;color:var(--gray);font-size:.76rem;margin-top:22px;line-height:1.5}
+
+  @media(max-width:480px){
+    .row{grid-template-columns:22px 1fr;grid-template-areas:"g c" ". a" ". d";row-gap:6px}
+    .glyph{grid-area:g}.course{grid-area:c}.arrow{grid-area:a;justify-self:start;transform:rotate(90deg)}.dest{grid-area:d}
+  }
+  @media(prefers-reduced-motion:reduce){*{transition-duration:.001ms !important}.step{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="form" id="formView">
+      <h1 class="name">CreditJump</h1>
+      <p class="tag">will your credits transfer?<span class="beta">beta</span></p>
+
+      <div class="step show" id="step1">
+        <input class="in" id="f1" type="text" placeholder="enter your university here" autocomplete="off" />
+      </div>
+      <div class="step hidden" id="step2">
+        <input class="in" id="f2" type="text" placeholder="what are you studying?" autocomplete="off" />
+      </div>
+      <div class="step hidden" id="step3">
+        <input class="in" id="f3" type="text" placeholder="transfer to which school?" list="schoolList" autocomplete="off" />
+        <datalist id="schoolList"></datalist>
+      </div>
+      <div class="step hidden" id="step4">
+        <input class="in" id="f4" type="text" placeholder="to study what?" autocomplete="off" />
+      </div>
+      <div class="step hidden" id="step5">
+        <div class="transcript">
+          <button type="button" class="file-btn" id="fileBtn">Add your transcript (PDF)</button>
+          <input type="file" id="fileInput" accept=".pdf" hidden />
+          <button type="button" class="sample" id="sampleBtn">or see a sample result</button>
+        </div>
+      </div>
+      <div class="step hidden" id="step6">
+        <button type="button" class="go-btn" id="goBtn">See what transfers</button>
+      </div>
+    </div>
+
+    <div id="status">
+      <div class="spin"></div>
+      <p id="statusMsg">Reading your transcript…</p>
+    </div>
+
+    <div id="results">
+      <div class="r-num"><span id="rTransfer">0</span> / <span id="rTotal">0</span></div>
+      <div class="r-label">credits transfer</div>
+      <div class="r-route" id="rRoute"></div>
+      <div class="r-meta" id="rMeta"></div>
+      <div class="legend">
+        <span><b>●</b>transfers</span><span><b>○</b>elective</span><span><b>✕</b>no match</span>
+      </div>
+      <div id="list"></div>
+      <button class="startover" id="startOver">Start over</button>
+      <p class="disc">Unofficial estimate. Final decisions are made by the destination school's registrar after they review your official transcript.</p>
+    </div>
+  </div>
+
+<script>
+  // ====== SET THIS to your deployed API URL (leave "" for sample-only mode) ======
+  const API_BASE = "http://localhost:8000";  // e.g. "https://creditjump-api.onrender.com"
+  // ===============================================================================
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = id => document.getElementById(id);
+
+  // built-in sample (same shape the API returns) so the demo works with no backend
+  const SAMPLE = {
+    from_school:"Louisiana State University at Alexandria", destination:"Louisiana State University",
+    summary:{total_credits:49, confirmed_transfer:30, projected_in_progress:13, not_transferring:6},
+    courses:[
+      {code:"ENGL 1001",title:"English Composition",credits:3,dest_code:"ENGL 1001",dest_title:"English Composition I",ui_status:"go",status:"direct",note:null},
+      {code:"MATH 1021",title:"College Algebra",credits:3,dest_code:"MATH 1021",dest_title:"College Algebra",ui_status:"go",status:"direct",note:null},
+      {code:"CMST 2000",title:"Intro Mass Media",credits:3,dest_code:"—",dest_title:"General elective credit",ui_status:"review",status:"elective",note:"No direct equivalent on file."},
+      {code:"HIST 3071",title:"Louisiana History",credits:3,dest_code:null,dest_title:null,ui_status:"no",status:"ineligible",note:"Grade of F — earns no transferable credit."},
+      {code:"LSUA 1001",title:"Academic Success",credits:3,dest_code:null,dest_title:null,ui_status:"no",status:"none",note:"Institutional course — not accepted."},
+      {code:"CHEM 1201",title:"Gen Chemistry I",credits:3,dest_code:"CHEM 1201",dest_title:"General Chemistry I",ui_status:"go",status:"pending",note:"In progress — will transfer once completed."}
+    ]
+  };
+
+  function reveal(id){const el=$(id);if(!el.classList.contains('hidden'))return;el.classList.remove('hidden');requestAnimationFrame(()=>el.classList.add('show'));}
+
+  [["f1","step2"],["f2","step3"],["f3","step4"],["f4","step5"]].forEach(([input,next])=>{
+    const el=$(input);
+    el.addEventListener('input',()=>{if(el.value.trim())reveal(next);});
+    el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(el.value.trim()){reveal(next);const n=document.querySelector('#'+next+' input,#'+next+' button');if(n)n.focus();}}});
+  });
+
+  // populate destination list from the API
+  if(API_BASE){
+    fetch(API_BASE+"/schools").then(r=>r.json()).then(d=>{
+      $("schoolList").innerHTML=(d.destinations||[]).map(s=>`<option value="${s}">`).join("");
+    }).catch(()=>{});
+  }
+
+  const fileInput=$("fileInput"), fileBtn=$("fileBtn");
+  let chosenFile=null;
+  function fileChosen(name){fileBtn.textContent=name;fileBtn.classList.add('done');reveal('step6');}
+  fileBtn.addEventListener('click',()=>fileInput.click());
+  fileInput.addEventListener('change',e=>{if(e.target.files[0]){chosenFile=e.target.files[0];fileChosen(chosenFile.name);}});
+  $("sampleBtn").addEventListener('click',()=>{render(SAMPLE,true);});
+
+  $("goBtn").addEventListener('click',submit);
+
+  function show(view){["formView","status","results"].forEach(v=>{$(v).classList.toggle('show', v===view);if(v!=="formView")$(v).style.display=v===view?'block':'none';});$("formView").style.display=view==="formView"?'block':'none';}
+
+  async function submit(){
+    const dest=$("f3").value.trim();
+    if(!chosenFile){setError("Add your transcript PDF first (or tap “see a sample result”).");return;}
+    if(!API_BASE){setError("Live checking isn't connected yet — tap “see a sample result” to preview.");return;}
+    if(!dest){setError("Type the school you want to transfer to.");return;}
+
+    show("status");$("statusMsg").classList.remove('err');
+    $("statusMsg").textContent="Reading your transcript…";
+    const slow=setTimeout(()=>{$("statusMsg").textContent="Still working — the first check after a quiet spell can take ~30s.";},3000);
+
+    try{
+      const fd=new FormData();
+      fd.append("transcript",chosenFile);
+      fd.append("destination",dest);
+      const res=await fetch(API_BASE+"/evaluate",{method:"POST",body:fd});
+      clearTimeout(slow);
+      const data=await res.json();
+      if(!res.ok){setError(data.detail||"Something went wrong. Try again.");return;}
+      render(data,false);
+    }catch(e){clearTimeout(slow);setError("Couldn't reach the server. Check your connection and try again.");}
+  }
+
+  function setError(msg){show("status");document.querySelector("#status .spin").style.display="none";$("statusMsg").classList.add('err');$("statusMsg").textContent=msg;
+    setTimeout(()=>{show("formView");document.querySelector("#status .spin").style.display="";},2600);}
+
+  function render(data,isSample){
+    const s=data.summary;
+    $("rTransfer").textContent=s.confirmed_transfer;
+    $("rTotal").textContent=s.total_credits;
+    $("rRoute").textContent=(data.from_school||"Your school")+"  →  "+data.destination;
+    const bits=[];
+    if(s.projected_in_progress)bits.push("+"+s.projected_in_progress+" projected from in-progress courses");
+    if(s.not_transferring)bits.push(s.not_transferring+" won't transfer");
+    $("rMeta").textContent=bits.join(" · ")+(isSample?"   (sample)":"");
+
+    $("list").innerHTML=data.courses.map(c=>{
+      const g=c.ui_status;
+      const glyph=g==="go"
+        ? '<div class="box"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M1.5 5.2l2.3 2.3L8.5 2.5" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>'
+        : g==="review" ? '<div class="box"></div>'
+        : '<div class="box"><svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2.5 2.5l5 5m0-5l-5 5" stroke="#777" stroke-width="1.4" stroke-linecap="round"/></svg></div>';
+      const destCode = c.dest_code && c.dest_code!=="—" && g==="go"
+        ? '<span class="code">'+c.dest_code+'</span>'
+        : '<span class="code dim">'+(g==="review"?"elective":"—")+'</span>';
+      const pend = c.status==="pending" ? '<div class="pend">in progress</div>' : '';
+      return `<div class="row ${g}">
+        <div class="glyph">${glyph}</div>
+        <div class="course"><span class="code">${c.code}</span><div class="title">${c.title} · ${c.credits} cr</div></div>
+        <div class="arrow"><svg width="16" height="9" viewBox="0 0 16 9" fill="none"><path d="M0 4.5h12m0 0L8.5 1m3.5 3.5L8.5 8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="dest">${destCode}<div class="title">${c.dest_title||""}</div>${pend}</div>
+      </div>`;
+    }).join("");
+
+    show("results");window.scrollTo({top:0,behavior:reduce?'auto':'smooth'});
+  }
+
+  $("startOver").addEventListener('click',()=>{show("formView");window.scrollTo({top:0,behavior:reduce?'auto':'smooth'});});
+</script>
+</body>
+</html>

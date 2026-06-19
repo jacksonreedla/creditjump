@@ -1,0 +1,19 @@
+{
+  "_comment": "Each row is one equivalency a destination school publishes for an incoming course. This is the data layer your 500 transfer tables become. Keyed by destination school + the incoming course code.",
+  "destination": "Louisiana State University",
+  "equivalencies": [
+    { "source_code": "ENGL 1001", "dest_code": "ENGL 1001", "dest_title": "English Composition I",        "credits": 3.0, "applies_to": "gen_ed"   },
+    { "source_code": "ENGL 1002", "dest_code": "ENGL 1002", "dest_title": "English Composition II",       "credits": 3.0, "applies_to": "gen_ed"   },
+    { "source_code": "MATH 1021", "dest_code": "MATH 1021", "dest_title": "College Algebra",               "credits": 3.0, "applies_to": "gen_ed"   },
+    { "source_code": "MATH 1022", "dest_code": "MATH 1022", "dest_title": "Plane Trigonometry",            "credits": 3.0, "applies_to": "major"    },
+    { "source_code": "BIOL 1001", "dest_code": "BIOL 1201", "dest_title": "Biology for Science Majors I",  "credits": 3.0, "applies_to": "gen_ed"   },
+    { "source_code": "BIOL 1002", "dest_code": "BIOL 1202", "dest_title": "Biology for Science Majors II", "credits": 3.0, "applies_to": "gen_ed"   },
+    { "source_code": "BIOL 1003", "dest_code": "BIOL 1208", "dest_title": "Biology Laboratory I",          "credits": 1.0, "applies_to": "gen_ed"   },
+    { "source_code": "CHEM 1201", "dest_code": "CHEM 1201", "dest_title": "General Chemistry I",           "credits": 3.0, "applies_to": "major"    },
+    { "source_code": "PSYC 2000", "dest_code": "PSYC 2000", "dest_title": "Introduction to Psychology",    "credits": 3.0, "applies_to": "gen_ed"   },
+    { "source_code": "HIST 2055", "dest_code": "HIST 2055", "dest_title": "United States History to 1865", "credits": 3.0, "applies_to": "gen_ed"   },
+    { "source_code": "POLI 1001", "dest_code": "POLI 1001", "dest_title": "Intro to Political Science",    "credits": 3.0, "applies_to": "gen_ed"   },
+    { "source_code": "POLI 2051", "dest_code": "POLI 2051", "dest_title": "American Government",            "credits": 3.0, "applies_to": "gen_ed"   },
+    { "source_code": "MUSI 1751", "dest_code": "MUSI 1751", "dest_title": "Music Appreciation",            "credits": 3.0, "applies_to": "gen_ed"   }
+  ]
+}
